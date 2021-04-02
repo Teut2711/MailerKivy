@@ -1,0 +1,98 @@
+[
+  {
+    "type": "title",
+    "title": "Server :"
+  },
+
+  {
+    "type": "string",
+    "title": "SMTP Host",
+    "desc": "Set the SMTP host name",
+    "section": "serverSettings",
+    "key": "smtp_host"
+  },
+
+  {
+    "type": "numeric",
+    "title": "SMTP Port",
+    "desc": "Set the SMTP port name",
+    "section": "serverSettings",
+    "key": "smtp_port"
+  },
+
+  {
+    "type": "string",
+    "title": "IMAP Host",
+    "desc": "Set the IMAP host name",
+    "section": "serverSettings",
+    "key": "imap_host"
+  },
+
+  {
+    "type": "numeric",
+    "title": "IMAP Port",
+    "desc": "Set the IMAP port name",
+    "section": "serverSettings",
+    "key": "imap_port"
+  },
+  {
+    "type": "numeric",
+    "title": "Mails per hour",
+    "desc": "Set how many mails to send per hour. Put 0 or negative number to send all.",
+    "section": "serverSettings",
+    "key": "mails_per_hour"
+  },
+  {
+    "type": "title",
+    "title": "Templates :"
+  },
+  {
+    "type": "string",
+    "title": "To",
+    "desc": "the 'To' field column name in spreadsheet",
+    "section": "templates",
+    "key": "To"
+  },
+  {
+    "type": "string",
+    "title": "CC",
+    "desc": "the 'Cc' field column name in spreadsheet",
+    "section": "templates",
+    "key": "Cc"
+  },
+  {
+    "type": "string",
+    "title": "BCC",
+    "desc": "the 'Bcc' field column name in spreadsheet",
+    "section": "templates",
+    "key": "Bcc"
+  },
+  {
+    "type": "string",
+    "title": "From",
+    "desc": "the 'From' field column name in spreadsheet",
+    "section": "templates",
+    "key": "From"
+  },
+  {
+    "type": "string",
+    "title": "Subject",
+    "desc": "the 'Subject' field column name in spreadsheet",
+    "section": "templates",
+    "key": "Subject"
+  },
+  {
+    "type": "string",
+    "title": "File Attachment",
+    "desc": "the 'File attachment' field column name in spreadsheet",
+    "section": "templates",
+    "key": "attachments"
+  },
+  {
+    "type": "string",
+    "title": "Templating Columns Initial",
+    "desc": "the word document 'Template' field column name in spreadsheet",
+    "section": "templates",
+    "key": "template_path"
+  }
+]

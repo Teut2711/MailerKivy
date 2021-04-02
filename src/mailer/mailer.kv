@@ -1,0 +1,270 @@
+#:import ProgressBar kivy.uix.progressbar.ProgressBar
+#:import Factory kivy.factory.Factory
+#:import utils kivy.utils
+#:import window  kivy.core.window.Window
+#:import dirname os.path.dirname
+#:import join os.path.join
+#:import AsyncImage kivy.uix.image.AsyncImage
+
+
+<AppScreen>:
+    BoxLayout:
+        font_size:18
+        canvas.before:
+            Color:
+                rgb: utils.get_color_from_hex('#000000')
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        padding:[50,50,50,50]
+        orientation:
+            'vertical'
+        
+        Label:
+            size_hint:(1, 2/17)
+            id : days_remaining
+            text:""
+            markup:True  
+
+        Label:
+            size_hint:(1, 2/17)
+            text:'[color=F0FFFF]Mailer[/color]'
+            font_size: 50
+            markup:True
+        BoxLayout:
+            size_hint:(1, 2/17) 
+            spacing:20
+            Label:
+                size_hint:(1/6, 1)
+                height:10
+                text:'[b]File Path[/b]'
+                markup:True
+            TextInput:
+                id:file_path
+                size_hint:(4/6, .7)
+                height:10
+                markup:True
+                multiline:False
+            Button:
+                size_hint:(1/6, .7)
+                height:10
+                text:'Browse'
+                background_color: utils.get_color_from_hex('#4682B4')
+                on_release:
+                    root.show_file_select_dialog_and_set_file_path()
+        ProgressBar:
+            size_hint:(1, 2/17)
+            id:progressbar
+            min :0
+            max :100
+            height: dp(160)
+            value: 0
+        AnchorLayout:
+            size_hint:(1, 2/17)
+            anchor_x:'center'
+            anchor_y:'center'
+            padding:[10, 10, 10, 10]
+            Label:
+                id :progress_value
+                size_hint:(1/6, 1)
+                height:10
+                text:str(progressbar.value)
+        AnchorLayout:
+            anchor_x:'center'
+            anchor_y:'center'
+            size_hint:(1, 1/17)
+            Button:
+                text:'Start Mailing!'
+                background_color: utils.get_color_from_hex('#8A2BE2')
+                size_hint:(None, None)
+                size:(200, 50)
+                on_press: Factory.CredentialsModalView().open()
+        Label:
+            size_hint:(1, 1/17)
+            readonly:True
+            background_color:1,1,1,1
+        ScrollView:
+            size_hint:(1, 4/17)
+            do_scroll_x: False
+            do_scroll_y: True
+            bar_width:20
+            bar_color:163/255,163/255,163/255
+            bar_inactive_color:163/255,163/255,163/255
+            scroll_type: ['bars']
+            always_overscroll: False
+            InfoArea:
+                text:""
+                id: info_area 
+        BoxLayout:
+            size_hint:(1, 2/17)
+            spacing:20
+            padding:10, 10, 10, 10 
+            Button:
+                size_hint:(.5, 1)
+                font_size:18
+                text:"Get CSV template"
+                on_release:
+                    root.show_dialog_and_save_starter_csv_file()
+            ImageButton:
+                id:gear
+                size_hint:(.5, 1)
+                on_release:  app.open_settings()
+
+
+<MyProgressBar@Widget>:
+    canvas:
+        Color:
+            rgb:1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgb:0, 0, 1
+        Rectangle: 
+            pos: self.pos
+            size: (self.width*7, self.height)
+
+<InfoArea>:
+    padding:[10, 10, 10, 10]
+    size_hint: 1, 1
+    height: self.minimum_height 
+
+
+<ImageButton>:
+    text: "Settings"
+    font_size:18
+    Image:
+        source: root.image_path
+        size: root.width  , root.height - 10
+        pos: root.x - 100, root.y +3
+
+
+<CredentialsModalView>
+    auto_dismiss:False
+    background_color:1,1,1,1
+    size_hint:(.8,.8)
+    padding:[30,30,30,30]
+
+    BoxLayout:
+        orientation:'vertical'
+        Label:
+            size_hint_y: None
+            size: self.texture_size
+            id:error_message
+            text:""
+            
+        Label:
+            text:"Username"
+        TextInput:
+
+            id:username
+            multiline:False
+            text:""
+        Label:
+            text:"Password"
+        TextInput:
+            id:password
+            password:True
+            multiline:False
+            text:""
+            
+        BoxLayout:
+            padding:0, 50, 0, 0
+            Button:
+                size_hint:.5, 1
+                text:'OK'
+                on_release:
+                    root.dismiss()
+                    app.start_mailing(username.text, password.text)
+            Button:
+                size_hint:.5, 1
+                text:'Cancel'
+                on_release:
+                    root.dismiss()
+
+
+
+<LicenseModalView>
+    auto_dismiss:False
+    background: ''
+    background_color:[1,0,0,1]
+    size_hint:(.8,.8)
+    padding:[30,30,30,30]
+    BoxLayout:
+        spacing:20
+        orientation:'vertical'
+        Label:
+            size_hint_y: None
+            size: self.texture_size
+            id:error_message_license
+            text:""
+            markup:True
+        Label:
+            size_hint_y: None
+            size: self.texture_size
+            text:"Please enter your license key"
+        TextInput:
+            size_hint:1, .5
+            id:license_key
+            multiline:False
+            text:""
+            on_text:
+                error_message_license.text = ""
+        Label:
+            size_hint_y: None
+            size: self.texture_size
+            text:"Please enter your token"
+        TextInput:
+            size_hint:1, .5
+            id:token
+            multiline:False
+            text:""    
+            on_text:
+                error_message_license.text = ""
+            
+        BoxLayout:
+            padding:0, 50, 0, 0
+            Button:
+                size_hint:.5, .5
+                text:'OK'
+                on_release:
+                    root.register_credentials_and_save_to_json(license_key.text, token.text)                 
+            Button:
+                size_hint:.5, .5
+                text:'Cancel'
+                on_release:
+                    app.stop()
+
+<LoadingModalView>
+    auto_dismiss:False
+    background_normal:""
+    background_color:[1,1,1,1]
+    size_hint:(.5,.5)
+    padding:[30,30,30,30]
+    Loading:
+        size_hint: None, None
+        pos_hint: {'center': (.5, .8)}
+        opacity: 1
+
+     
+<Loading@Widget>:
+    angle: (self.parent.time * 360) % 360
+    radius: self.width
+    canvas:
+        Color:
+            rgba: rgba('#FF4444')
+        Line:
+            width: 9
+            ellipse: self.x, self.y, self.radius or 0, self.radius or 0, self.angle or 0, (self.angle or 0) + 90
+        Line:
+            width: 9
+            ellipse: self.x, self.y, self.radius or 0, self.radius or 0, (self.angle or 0) + 180, (self.angle or 0) + 180 + 90
+        SmoothLine:
+            width: 10
+            ellipse: self.x, self.y, self.radius or 0, self.radius or 0, self.angle or 0, (self.angle or 0) + 90
+        SmoothLine:
+            width: 10
+            ellipse: self.x, self.y, self.radius or 0, self.radius or 0, (self.angle or 0) + 180, (self.angle or 0) + 180 + 90
+    
+
