@@ -1,9 +1,11 @@
-
 import csv
 import plyer
 from kivy.app import App
-from kivy.uix.screenmanager import NoTransition, Screen, ScreenManager
+from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
+
+
+
 
 class AppScreen(Screen):
     def update_info_area(self, text):
@@ -18,7 +20,7 @@ class AppScreen(Screen):
         if ret:
             self.ids.file_path.text = ret[0]
 
-    def make_and_save_csv_file(self, file_path):
+    def _make_and_save_csv_file(self, file_path):
         data = {
             App.get_running_app().config.get("templates", "From"): [
                 "abc@gmail.com",
@@ -54,7 +56,7 @@ class AppScreen(Screen):
             ],
         }
         with open(
-            file_path + ".csv" if not file_path.endswith(".csv") else "", "wb"
+            file_path + ".csv" if not file_path.endswith(".csv") else "", "w"
         ) as outfile:
 
             writer = csv.writer(outfile)
@@ -65,11 +67,14 @@ class AppScreen(Screen):
         chooser = plyer.filechooser
         ret = chooser.save_file(filters=["*.csv"])
         if ret:
-            self.make_and_save_csv_file(file_path=ret[0])
-            self.ids.file_path.text = ret[0]
+            self._make_and_save_csv_file(file_path=ret[0])
+            self.ids.file_path.text = (
+                ret[0] + ".csv" if not ret[0].endswith(".csv") else ""
+            )
 
     def update_screen_progressvalue(self, counter, total_counts):
         self.ids.progress_value.text = f"{counter} of {total_counts} done"
+
 
 class InfoArea(TextInput):
     """
@@ -82,5 +87,7 @@ class InfoArea(TextInput):
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         if keycode[0] != 8:
-            return super().keyboard_on_key_down(window, keycode, text, modifiers)
+            return super().keyboard_on_key_down(
+                window, keycode, text, modifiers
+            )
         return True

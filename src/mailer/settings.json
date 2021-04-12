@@ -3,7 +3,6 @@
     "type": "title",
     "title": "Server :"
   },
-
   {
     "type": "string",
     "title": "SMTP Host",
@@ -11,7 +10,6 @@
     "section": "serverSettings",
     "key": "smtp_host"
   },
-
   {
     "type": "numeric",
     "title": "SMTP Port",
@@ -19,21 +17,12 @@
     "section": "serverSettings",
     "key": "smtp_port"
   },
-
   {
     "type": "string",
-    "title": "IMAP Host",
-    "desc": "Set the IMAP host name",
+    "title": "Email Response Receiver(May or may not work)",
+    "desc": "the email address to which the mail response will be sent by the receiving mail server.",
     "section": "serverSettings",
-    "key": "imap_host"
-  },
-
-  {
-    "type": "numeric",
-    "title": "IMAP Port",
-    "desc": "Set the IMAP port name",
-    "section": "serverSettings",
-    "key": "imap_port"
+    "key": "email_recepient"
   },
   {
     "type": "numeric",
@@ -90,9 +79,16 @@
   },
   {
     "type": "string",
-    "title": "Templating Columns Initial",
+    "title": "Template Path",
     "desc": "the word document 'Template' field column name in spreadsheet",
     "section": "templates",
     "key": "template_path"
+  },
+  {
+    "type": "string",
+    "title": "Template Path",
+    "desc": "the image columns starting in spreadsheet. default is `IMG`",
+    "section": "templates",
+    "key": "image_initial"
   }
 ]

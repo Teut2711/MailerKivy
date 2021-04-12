@@ -15,6 +15,7 @@ from datetime import datetime
 import bs4
 from docxtpl import DocxTemplate, InlineImage
 from win32com import client as wc
+from kivy.app import App
 
 
 class PrepMessage:
@@ -36,8 +37,8 @@ class PrepMessage:
     def _put_images_in_email_message(self, html_string):
         def get_image_path(html_path, img):
             return os.path.join(
-                os.path.splitext(html_path)[
-                    0] + "_files", os.path.basename(img["src"])
+                os.path.splitext(html_path)[0] + "_files",
+                os.path.basename(img["src"]),
             )
 
         soup = bs4.BeautifulSoup(html_string, "lxml")
@@ -115,7 +116,8 @@ class PrepMessage:
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
         temporary_directory_path = tempfile.mkdtemp(
-            prefix="tempdir-", suffix=dt_string)
+            prefix="tempdir-", suffix=dt_string
+        )
 
         with open(
             os.path.join(temporary_directory_path, "word_template.docx"), "wb"
@@ -127,8 +129,9 @@ class PrepMessage:
             os.path.join(temporary_directory_path, "word_template.docx")
         )
         doc.SaveAs(
-            os.path.join(temporary_directory_path,
-                         f"word_template_filled.{extension}"),
+            os.path.join(
+                temporary_directory_path, f"word_template_filled.{extension}"
+            ),
             enumeration,
         )
 
@@ -141,7 +144,9 @@ class PrepMessage:
 
     def _add_plain_text_message(self, stream):
 
-        with open(self._convert_docx_to_other_and_save_to_disk(stream, "txt", 2)) as fp:
+        with open(
+            self._convert_docx_to_other_and_save_to_disk(stream, "txt", 2)
+        ) as fp:
             text = fp.read()
         msgAlternative = MIMEMultipart("alternative")
 
@@ -158,19 +163,22 @@ class PrepMessage:
         msgAlternative = MIMEMultipart("alternative")
 
         msgAlternative.attach(
-            MIMEText(html, _subtype="html", _charset="utf-8"))
+            MIMEText(html, _subtype="html", _charset="utf-8")
+        )
         self.msg.attach(msgAlternative)
 
     def _put_images_into_context(self, template, context):
-        """ "
-        Python-docx-template requires a different way to put images into the docx.
-        This context variables for inline images need to  InlineImage  objects.
-        """
-        # variable name get hack  ; a = 10  how to get "a"
+
+        # Python-docx-template requires a different way to put images into the docx.
+        # This context variables for inline images need to  InlineImage  objects.
+        # variable name get hack  ; a = 10  how to get "a". Key can be anything but hashable  {10: a}
+
         d = {template: "template"}
 
         for k, v in context.items():
-            if k.startswith("IMG_"):
+            if k.startswith(
+                App.get_running_app().config.get("templates", "image_initial")
+            ):
                 context[k] = eval(f"InlineImage({d[template]}, {v})")
         return context
 

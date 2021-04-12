@@ -75,6 +75,7 @@
             anchor_y:'center'
             size_hint:(1, 1/17)
             Button:
+                id:start_mailing
                 text:'Start Mailing!'
                 background_color: utils.get_color_from_hex('#8A2BE2')
                 size_hint:(None, None)
@@ -129,8 +130,7 @@
     padding:[10, 10, 10, 10]
     size_hint: 1, 1
     height: self.minimum_height 
-
-
+   
 <ImageButton>:
     text: "Settings"
     font_size:18
@@ -145,15 +145,13 @@
     background_color:1,1,1,1
     size_hint:(.8,.8)
     padding:[30,30,30,30]
-
     BoxLayout:
         orientation:'vertical'
         Label:
             size_hint_y: None
             size: self.texture_size
-            id:error_message
+            id:error_message_creds
             text:""
-            
         Label:
             text:"Username"
         TextInput:
@@ -188,7 +186,7 @@
 <LicenseModalView>
     auto_dismiss:False
     background: ''
-    background_color:[1,0,0,1]
+    background_color:[255/255, 189/255, 51/255, 1]
     size_hint:(.8,.8)
     padding:[30,30,30,30]
     BoxLayout:
@@ -203,7 +201,8 @@
         Label:
             size_hint_y: None
             size: self.texture_size
-            text:"Please enter your license key"
+            text:"[b][color=232b2b]Please enter your license key[/color][/b]"
+            markup:True
         TextInput:
             size_hint:1, .5
             id:license_key
@@ -214,7 +213,8 @@
         Label:
             size_hint_y: None
             size: self.texture_size
-            text:"Please enter your token"
+            text:"[b][color=232b2b]Please enter your token[/color][/b]"
+            markup:True
         TextInput:
             size_hint:1, .5
             id:token
@@ -222,14 +222,14 @@
             text:""    
             on_text:
                 error_message_license.text = ""
-            
         BoxLayout:
             padding:0, 50, 0, 0
             Button:
+                id:button_license_OK
                 size_hint:.5, .5
                 text:'OK'
                 on_release:
-                    root.register_credentials_and_save_to_json(license_key.text, token.text)                 
+                    root.load_loading_view_and_process_registration_data(license_key.text, token.text)
             Button:
                 size_hint:.5, .5
                 text:'Cancel'
