@@ -67,9 +67,9 @@
             padding:[10, 10, 10, 10]
             Label:
                 id :progress_value
+                text:" "
                 size_hint:(1/6, 1)
                 height:10
-                text:str(progressbar.value)
         AnchorLayout:
             anchor_x:'center'
             anchor_y:'center'
@@ -96,7 +96,8 @@
             always_overscroll: False
             InfoArea:
                 text:""
-                id: info_area 
+                id: info_area
+                markup:True
         BoxLayout:
             size_hint:(1, 2/17)
             spacing:20

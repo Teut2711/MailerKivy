@@ -12,15 +12,9 @@ from mailer.mailing_exceptions import FromMissingError, SubjectMissingError
 
 class Mailer:
     def __init__(self):
-        self.mail_queue = Queue()
-        self.max_mails = 100
+        self.queue_size = 100
+        self.mail_queue = Queue(maxsize=self.queue_size)
         self.total_rows = None
-
-    def _set_total_row_count(self, spreadsheet_path):
-
-        with open(spreadsheet_path) as csvfile:
-            # -1 because total rows is all rows - the header
-            self.total_rows = sum(1 for row in csv.reader(csvfile)) - 1
 
     def set_up_connections(self):
         app = App.get_running_app()
@@ -42,109 +36,120 @@ class Mailer:
             self._set_total_row_count(spreadsheet_path)
 
         except smtplib.SMTPAuthenticationError:
-            self.mailer.close_connections()
+            self.close_connections()
             raise smtplib.SMTPAuthenticationError
         else:
             self.smtp_connection.starttls()
             self.smtp_connection.login(username, password)
-            t1 = threading.Thread(
-                target=self._make_mail_objects, args=(spreadsheet_path,)
+            App.get_running_app().root.current_screen.update_info_area(
+                "Process Started...\n"
             )
-            t1.daemon = True
-            t1.start()
 
-            t2 = threading.Thread(
-                target=self._send_a_mail, args=(spreadsheet_path,)
-            )
-            t2.daemon = True
-            t2.start()
+            threading.Thread(
+                target=self._make_mail_objects,
+                args=(spreadsheet_path,),
+                daemon=True,
+            ).start()
+
+            threading.Thread(
+                target=self._send_a_mail, args=(spreadsheet_path,), daemon=True
+            ).start()
+
+    def _set_total_row_count(self, spreadsheet_path):
+
+        with open(spreadsheet_path) as csvfile:
+            self.total_rows = sum(1 for row in csv.reader(csvfile)) - 1
+        app = App.get_running_app()
+        app.root.current_screen.ids.progressbar.max = self.total_rows
 
     def _make_mail_objects(self, spreadsheet_path):
+
+        app = App.get_running_app()
+        mails_per_hour = app.config.getint("serverSettings", "mails_per_hour")
+
         with open(spreadsheet_path) as csvfile:
             reader = csv.DictReader(csvfile)
-            row = iter(reader)
-            nth_row = 0
 
-            while True:
+            for k, row in enumerate(reader, start=1):
+
                 try:
-                    if self.mail_queue.qsize() <= self.max_mails:
-                        nth_row += 1
-                        self.mail_queue.put(
-                            self._get_mail_object_from_row(next(row), nth_row)
-                        )
+                    email_message = self._get_mail_object_from_row(row)
                 except (
                     SubjectMissingError,
                     FromMissingError,
                 ) as error_message:
-                    App.get_running_app().root.current_screen.update_info_area(
-                        "\n" + str(error_message) + "\n"
-                    )
+                    email_message = error_message
 
-                except StopIteration:
-                    return False
-
-    def _send_a_mail(self, spreadsheet_path):
-        app = App.get_running_app()
-        mails_per_hour = app.config.getint("serverSettings", "mails_per_hour")
-        nth_row = 0
-
-        app.root.current_screen.ids.progressbar.max = self.total_rows
-
-        while nth_row != self.total_rows:
-            try:
-                message = self.mail_queue.get().msg
-                nth_row += 1
-                failed_recipients = self.smtp_connection.send_message(message)
-            except SMTPRecipientsRefused as e:
-                app.root.current_screen.update_progressbar(nth_row)
-                app.root.current_screen.update_info_area(
-                    "Failed: " + str(list(e.recipients.keys()))
-                )
-
-            else:
-
-                app.root.current_screen.update_progressbar(nth_row)
-                app.root.current_screen.update_screen_progressvalue(
-                    nth_row, self.total_rows
-                )
-                app.root.current_screen.update_info_area(
-                    (
-                        "Failed: " + str(list(failed_recipients.keys()))
-                        if failed_recipients
-                        else ""
-                    )
-                    + "\n"
-                    + f"Sent to: {message['To']}"
-                )
-            self._update_waiting_status_and_sleep(mails_per_hour, nth_row)
+                finally:
+                    self.mail_queue.put(email_message)
+                    self._update_waiting_status_and_sleep(k, mails_per_hour)
 
         self.mail_queue.join()
         self._show_finished_mailing_status()
+        app.root.current_screen.ids.start_mailing.disabled = False
 
-    def _update_waiting_status_and_sleep(self, mails_per_hour, nth_row):
-        def is_limit_per_hour_reached(nth_row):
-            return nth_row % mails_per_hour == 0
+    def _is_limit_per_hour_reached(self, nth_row, mails_per_hour):
+        return nth_row % mails_per_hour == 0
 
-        app = App.get_running_app()
-
+    def _update_waiting_status_and_sleep(self, nth_row, mails_per_hour):
         if (
             mails_per_hour > 0
-            and is_limit_per_hour_reached(nth_row)
+            and self._is_limit_per_hour_reached(nth_row, mails_per_hour)
             and nth_row < self.total_rows
         ):
-            app.root.current_screen.update_info_area("Waiting for 1 hour...")
+            app = App.get_running_app()
+            app.root.current_screen.update_info_area(
+                "[b]Waiting for 1 hour...[/b]"
+            )
             time.sleep(3600)
 
-    def _get_mail_object_from_row(self, row, nth_row):
+    def _send_a_mail(self, spreadsheet_path):
+
+        app = App.get_running_app()
+        count = 1
+        while True:
+
+            message = self.mail_queue.get()  # get message or exception
+            try:
+                if isinstance(message, PrepMessage):
+
+                    failed_recipients = self.smtp_connection.send_message(
+                        message.email_message
+                    )
+                else:
+                    raise message
+            except Exception as error_message:
+                app.root.current_screen.update_info_area(
+                    f"Row {count+1}) Failed > {error_message}"
+                )
+            else:
+                if failed_recipients:
+                    app.root.current_screen.update_info_area(
+                        f"Row {count+1}) Failed."
+                    )
+                else:
+                    app.root.current_screen.update_info_area(
+                        f"Row {count+1}) Mail sent."
+                    )
+
+            finally:
+                app.root.current_screen.update_progressbar(count)
+                app.root.current_screen.update_screen_progressvalue(
+                    count, self.total_rows
+                )
+                count += 1
+                self.mail_queue.task_done()
+
+    def _get_mail_object_from_row(self, row):
 
         data = {k: v.strip() for k, v in row.items() if v.strip()}
         app = App.get_running_app()
 
         if not app.config.get("templates", "From") in data:
-            raise FromMissingError(row_num=nth_row)
+            raise FromMissingError
 
         if not app.config.get("templates", "Subject") in data:
-            raise SubjectMissingError(row_num=nth_row)
+            raise SubjectMissingError
 
         msg = PrepMessage()
         if app.config.get("templates", "From") in data:
@@ -175,7 +180,7 @@ class Mailer:
                 context=data,
             )
 
-        msg.msg.add_header(
+        msg.email_message.add_header(
             "Disposition-Notification-To",
             app.config.get("serverSettings", "email_recepient"),
         )

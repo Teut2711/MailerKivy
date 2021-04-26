@@ -96,7 +96,6 @@ class MailerApp(App):
             self.root.current_screen.manager.current = "mailing"
 
             if self.root.current_screen.ids.file_path.text:
-                self.root.current_screen.update_info_area("Process Started...")
 
                 self.mailer.send_all_mails(
                     self.root.current_screen.ids.file_path.text,
@@ -124,12 +123,10 @@ class MailerApp(App):
                     "[color=ff0000][b]Invalid username or password. Please enter again.[/b][/color]"
                 )
             )
-            self.root.current_screen.ids.start_mailing.disabled = True
         except Exception as error_message:
             self.root.current_screen.update_info_area(
-                f"[b]Process interrupted[\b] \n {error_message}\n"
+                f"[b]Process interrupted[/b] \n {error_message}\n"
             )
-            self.root.current_screen.ids.start_mailing.disabled = False
 
     def build(self):
         self.icon = os.path.join(

@@ -20,7 +20,7 @@ from kivy.app import App
 
 class PrepMessage:
     def __init__(self):
-        self.msg = EmailMessage()
+        self.email_message = EmailMessage()
         self.templates = {}
         self.html_file_path = None
 
@@ -50,7 +50,7 @@ class PrepMessage:
 
             img["src"] = "cid:" + image_name
             msgImage.add_header("Content-ID", f"<{image_name}>")
-            self.msg.attach(msgImage)
+            self.email_message.attach(msgImage)
 
         return str(soup)
 
@@ -65,18 +65,22 @@ class PrepMessage:
 
     def __setitem__(self, name, val, *args, **kwargs):
         if name == "To":
-            self.msg.__setitem__("To", self._get_formatted_to(val))
+            self.email_message.__setitem__("To", self._get_formatted_to(val))
         elif name == "Subject":
-            self.msg.__setitem__("Subject", self._get_formatted_subject(val))
+            self.email_message.__setitem__(
+                "Subject", self._get_formatted_subject(val)
+            )
 
         elif name == "From":
-            self.msg.__setitem__("From", self._get_formatted_from(val))
+            self.email_message.__setitem__(
+                "From", self._get_formatted_from(val)
+            )
 
         elif name == "Cc":
-            self.msg.__setitem__("Cc", self._get_formatted_Cc(val))
+            self.email_message.__setitem__("Cc", self._get_formatted_Cc(val))
 
         elif name == "Bcc":
-            self.msg.__setitem__("Bcc", self._get_formatted_Bcc(val))
+            self.email_message.__setitem__("Bcc", self._get_formatted_Bcc(val))
 
     def _get_formatted_to(self, to):
         return ", ".join([i.strip() for i in to.split(",")])
@@ -101,7 +105,7 @@ class PrepMessage:
 
                     file_name = pathlib.Path(file_).name
                     maintype, subtype = self._get_mime(file_name).split("/")
-                    self.msg.add_attachment(
+                    self.email_message.add_attachment(
                         fp.read(),
                         maintype=maintype,
                         subtype=subtype,
@@ -151,7 +155,7 @@ class PrepMessage:
         msgAlternative = MIMEMultipart("alternative")
 
         msgAlternative.attach(MIMEText(text, _charset="utf-8"))
-        self.msg.attach(msgAlternative)
+        self.email_message.attach(msgAlternative)
 
     def _add_html_message(self, stream):
 
@@ -165,7 +169,7 @@ class PrepMessage:
         msgAlternative.attach(
             MIMEText(html, _subtype="html", _charset="utf-8")
         )
-        self.msg.attach(msgAlternative)
+        self.email_message.attach(msgAlternative)
 
     def _put_images_into_context(self, template, context):
 

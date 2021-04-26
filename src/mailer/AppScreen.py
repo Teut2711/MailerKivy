@@ -5,16 +5,17 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
 
-
-
 class AppScreen(Screen):
-    def update_info_area(self, text):
+    def update_info_area(self, text, *args, **kwargs):
         self.ids.info_area.text += "\n" + text
 
-    def update_progressbar(self, counter, dt=False):
+    def update_progressbar(self, counter, *args, **kwargs):
         self.ids.progressbar.value = counter
 
-    def show_file_select_dialog_and_set_file_path(self):
+    def update_screen_progressvalue(self, counter, total_counts):
+        self.ids.progress_value.text = f"{counter} of {total_counts} done"
+
+    def show_file_select_dialog_and_set_file_path(self, *args, **kwargs):
         chooser = plyer.filechooser
         ret = chooser.open_file(filters=["*.csv"])
         if ret:
@@ -72,9 +73,6 @@ class AppScreen(Screen):
                 ret[0] + ".csv" if not ret[0].endswith(".csv") else ""
             )
 
-    def update_screen_progressvalue(self, counter, total_counts):
-        self.ids.progress_value.text = f"{counter} of {total_counts} done"
-
 
 class InfoArea(TextInput):
     """
@@ -86,7 +84,7 @@ class InfoArea(TextInput):
         return True
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        if keycode[0] != 8:
+        if keycode[0] != 8:  # backspace
             return super().keyboard_on_key_down(
                 window, keycode, text, modifiers
             )
