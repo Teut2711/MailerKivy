@@ -1,19 +1,14 @@
-from kivy.clock import Clock
-
-##  WARNING: EVALS ARE USED
 import os
 import smtplib
-from mailer.License import LicenseModalView, Licensing
-from mailer.LoadingModalView import LoadingModalView
-import traceback
+import threading
+
 from kivy.app import App
+from kivy.config import Config
+from kivy.factory import Factory
 from kivy.uix.modalview import ModalView
 from kivy.uix.screenmanager import NoTransition, ScreenManager
-from .send_mail import Mailer
-from kivy.config import Config
-from kivy.uix.button import Button
-from kivy.factory import Factory
 from mailer.AppScreen import AppScreen
+from mailer.License import Licensing
 from mailer.license_exceptions import (
     InvalidCredentialsError,
     InvalidSystemIDError,
@@ -21,7 +16,9 @@ from mailer.license_exceptions import (
     RegistrationTimeExpiredError,
     UserNotRegisteredError,
 )
-import threading
+
+from .send_mail import Mailer
+from mailer import LoadingModalView
 
 Config.set("input", "mouse", "mouse,multitouch_on_demand")
 
@@ -32,11 +29,6 @@ class CredentialsModalView(ModalView):
         self.ids.username.focus = True
         if error_message:
             self.ids.error_message_creds.text = error_message
-        self.ids.error_message_creds.markup = True
-
-
-class ImageButton(Button):
-    image_path = os.path.join(os.path.dirname(__file__), "imgs", "gear.png")
 
 
 class MailerApp(App):
@@ -73,7 +65,6 @@ class MailerApp(App):
             )
 
     def on_start(self):
-
         loading_view = Factory.LoadingModalView()
         loading_view.open()
         data = {
@@ -95,25 +86,27 @@ class MailerApp(App):
         try:
             self.root.current_screen.manager.current = "mailing"
 
-            if self.root.current_screen.ids.file_path.text:
+            fileinput_component = (
+                self.root.current_screen.ids.fileinput_component.ids
+            )
+            self.mailer.send_all_mails(
+                fileinput_component.file_path.text,
+                username,
+                password,
+            )
 
-                self.mailer.send_all_mails(
-                    self.root.current_screen.ids.file_path.text,
-                    username,
-                    password,
-                )
-                self.root.current_screen.ids.start_mailing.disabled = True
+        except FileNotFoundError:
 
-            else:
-                self.root.current_screen.ids.file_path.hint_text = (
-                    "Please select a csv file"
-                )
-                self.root.current_screen.ids.file_path.hint_text_color = (
-                    1,
-                    0,
-                    0,
-                    1,
-                )
+            fileinput_component.file_path.hint_text = (
+                "Please select a csv file"
+            )
+
+            fileinput_component.file_path.hint_text_color = (
+                1,
+                0,
+                0,
+                1,
+            )
 
         except smtplib.SMTPAuthenticationError:
             credentials = CredentialsModalView()
@@ -123,10 +116,10 @@ class MailerApp(App):
                     "[color=ff0000][b]Invalid username or password. Please enter again.[/b][/color]"
                 )
             )
-        except Exception as error_message:
-            self.root.current_screen.update_info_area(
-                f"[b]Process interrupted[/b] \n {error_message}\n"
-            )
+        # except Exception as error_message:
+        #     self.root.current_screen.ids.info_area.update_info_area(
+        #         f"[b]Process interrupted[/b] \n {error_message}\n"
+        #     )
 
     def build(self):
         self.icon = os.path.join(

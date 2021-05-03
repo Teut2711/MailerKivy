@@ -8,6 +8,7 @@
 
 
 <AppScreen>:
+    self.size : widow.size
     BoxLayout:
         font_size:18
         canvas.before:
@@ -16,64 +17,30 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
-
-        padding:[50,50,50,50]
+        padding:[40,40,40,40]
         orientation:
-            'vertical'
-        
+            'vertical'        
         Label:
             size_hint:(1, 2/17)
             id : days_remaining
             text:""
             markup:True  
-
         Label:
             size_hint:(1, 2/17)
             text:'[color=F0FFFF]Mailer[/color]'
             font_size: 50
             markup:True
-        BoxLayout:
+        FileInputComponent:
+            id: fileinput_component
             size_hint:(1, 2/17) 
-            spacing:20
-            Label:
-                size_hint:(1/6, 1)
-                height:10
-                text:'[b]File Path[/b]'
-                markup:True
-            TextInput:
-                id:file_path
-                size_hint:(4/6, .7)
-                height:10
-                markup:True
-                multiline:False
-            Button:
-                size_hint:(1/6, .7)
-                height:10
-                text:'Browse'
-                background_color: utils.get_color_from_hex('#4682B4')
-                on_release:
-                    root.show_file_select_dialog_and_set_file_path()
-        ProgressBar:
-            size_hint:(1, 2/17)
-            id:progressbar
-            min :0
-            max :100
-            height: dp(160)
-            value: 0
+        ProgressBarComponent:
+            id:progressbar_component
+            size_hint:(1, 2/17) 
         AnchorLayout:
-            size_hint:(1, 2/17)
+            padding:[20, 20]
             anchor_x:'center'
             anchor_y:'center'
-            padding:[10, 10, 10, 10]
-            Label:
-                id :progress_value
-                text:" "
-                size_hint:(1/6, 1)
-                height:10
-        AnchorLayout:
-            anchor_x:'center'
-            anchor_y:'center'
-            size_hint:(1, 1/17)
+            size_hint:(1, 2/17)
             Button:
                 id:start_mailing
                 text:'Start Mailing!'
@@ -81,11 +48,8 @@
                 size_hint:(None, None)
                 size:(200, 50)
                 on_press: Factory.CredentialsModalView().open()
-        Label:
-            size_hint:(1, 1/17)
-            readonly:True
-            background_color:1,1,1,1
         ScrollView:
+            padding:[10, 10]
             size_hint:(1, 4/17)
             do_scroll_x: False
             do_scroll_y: True
@@ -102,17 +66,53 @@
             size_hint:(1, 2/17)
             spacing:20
             padding:10, 10, 10, 10 
-            Button:
+            TemplateCsvFileButton:
                 size_hint:(.5, 1)
-                font_size:18
-                text:"Get CSV template"
-                on_release:
-                    root.show_dialog_and_save_starter_csv_file()
             ImageButton:
                 id:gear
                 size_hint:(.5, 1)
                 on_release:  app.open_settings()
 
+
+<ProgressBarComponent@BoxLayout>:
+    orientation:"vertical"
+    ProgressBar:
+        size_hint:(1, 1.5/2)
+        id:progressbar
+        min :0
+        max :100
+        height: dp(160)
+        value: 0
+    AnchorLayout:
+        size_hint:(1, .5/2)
+        anchor_x:'center'
+        anchor_y:'center'
+        padding:[10, 10, 10, 10]
+        Label:
+            id :progress_value
+            text:" "
+            height:10
+
+<FileInputComponent@BoxLayout>:
+    spacing:10
+    Label:
+        id:label
+        size_hint:(1/6, .6)
+        height:10
+        text:'[b]File Path[/b]'
+        markup:True
+    TextInput:
+        id:file_path
+        size_hint:(4/6, .6)
+        height:10
+        markup:True
+    Button:
+        id:browse_button
+        size_hint:(1/6, .6)
+        height:10
+        text:'Browse'
+        background_color: utils.get_color_from_hex('#4682B4')
+     
 
 <MyProgressBar@Widget>:
     canvas:
@@ -126,6 +126,10 @@
         Rectangle: 
             pos: self.pos
             size: (self.width*7, self.height)
+
+<TemplateCsvFileButton>:
+    font_size:18
+    text:"Get CSV template"
 
 <InfoArea>:
     padding:[10, 10, 10, 10]
@@ -153,13 +157,14 @@
             size: self.texture_size
             id:error_message_creds
             text:""
+            markup:True
         Label:
             text:"Username"
         TextInput:
-
             id:username
             multiline:False
             text:""
+
         Label:
             text:"Password"
         TextInput:
@@ -181,7 +186,6 @@
                 text:'Cancel'
                 on_release:
                     root.dismiss()
-
 
 
 <LicenseModalView>

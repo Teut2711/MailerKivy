@@ -86,8 +86,8 @@
   },
   {
     "type": "string",
-    "title": "Template Path",
-    "desc": "the image columns starting in spreadsheet. default is `IMG`",
+    "title": "Image Initial",
+    "desc": "the image columns should start with this in spreadsheet. default is `IMG`",
     "section": "templates",
     "key": "image_initial"
   }

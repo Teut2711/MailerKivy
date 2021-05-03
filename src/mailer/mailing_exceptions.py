@@ -1,19 +1,30 @@
-class SubjectMissingError(Exception):
-    """Exception raised if subject is missing."""
+class ToError(Exception):
+    """Exception raised if to is invalid."""
 
     def __init__(
         self,
-        message="Subject is Missing.",
+        message="Invalid `To`",
     ):
 
         super().__init__(message)
 
 
-class FromMissingError(Exception):
-    """Exception raised if from is missing."""
+class SubjectError(Exception):
+    """Exception raised if subject is invalid."""
 
     def __init__(
         self,
-        message="From is Missing.",
+        message="Invalid `Subject`",
+    ):
+
+        super().__init__(message)
+
+
+class FromError(Exception):
+    """Exception raised if from is invalid."""
+
+    def __init__(
+        self,
+        message="Invalid `From`.",
     ):
         super().__init__(message)
