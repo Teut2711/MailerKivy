@@ -3,4 +3,5 @@
 
 <p>
 You can just click the button on the gui to get a csv file starter. You can add any number of columns and use the variable in your word document.
+Will provide release shortly
 </p>
