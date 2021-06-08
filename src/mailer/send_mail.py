@@ -46,11 +46,10 @@ class Mailer:
 
             threading.Thread(
                 target=self._make_mail_objects,
-                args=(spreadsheet_path,),
-                daemon=True,
+                args=(spreadsheet_path)
             ).start()
 
-            threading.Thread(target=self._send_a_mail, daemon=True).start()
+            threading.Thread(target=self._send_a_mail).start()
 
     def _set_total_row_count(self, spreadsheet_path):
 

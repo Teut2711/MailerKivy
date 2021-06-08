@@ -69,7 +69,8 @@ class InfoArea(TextInput):
         """Put updates in the log window"""
         self.text += "\n" + text
 
-    def generate_and_save_report(self):
+    def save_report(self):
+        get_save_file_path("txt")
         file_path = get_save_file_path("txt")
         with open(file_path, "w") as f:
             f.write(self.text)

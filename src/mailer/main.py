@@ -116,11 +116,11 @@ class MailerApp(App):
                     "[color=ff0000][b]Invalid username or password. Please enter again.[/b][/color]"
                 )
             )
-        # except Exception as error_message:
-        #     self.root.current_screen.ids.info_area.update_info_area(
-        #         f"[b]Process interrupted[/b] \n {error_message}\n"
-        #     )
-
+        except Exception as error_message:
+            self.root.current_screen.ids.info_area.update_info_area(
+                f"[b]Process interrupted[/b] \n {error_message}\n"
+            )
+       
     def build(self):
         self.icon = os.path.join(
             os.path.dirname(__file__), "imgs", "mailer.png"
